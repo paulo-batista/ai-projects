@@ -3,20 +3,23 @@ from django.views import generic
 from django.http.response import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from googleapiclient.discovery import build
+from apiclient.discovery import build
+from google import search
+import urllib
+from bs4 import BeautifulSoup
 import json, requests, random, re
 from pprint import pprint
 
 PAGE_ACCESS_TOKEN = "EAACBZAi171kMBACRtwqIKYVGbDoPR14RaXLh4fClBqSdqyCnSgaDVlLIMOxuZB0p8jO9dCJNWp2fHTCnM9HsIZAFNyqjuPNVppFi01qUPQtKUHrmb0ZCJlvJzq56k1QeUTmlbpty5fYuzOCDwrCnjZAZAURxVHQGbNpZCmwgT8BMqrxLl0LfvpO"
 VERIFY_TOKEN = "EAACBZAi171kMBAEgg9wxfrhZBjv4qCawMwEyEA4dUcH8nCk7dYHtC4GpFjAHTlvJlaP3ZCV11ZCTvZBzjsfowe1VLTm2SUnkKpAyhcblWHsBMRbicYImcbRQMPmTvZC96w7LXZBg1ZAchzbk1cDpS9y9SH3zVeRBydoQipVZA16N89V3Bxf8dUhxh"
 
-luiza_mind = { 'celular': ["""Encontrei excelentes ofertas sobre Brinquedos para voce: http://www.magazineluiza.com.br/celulares-e-smartphones/l/te/""", 
-                           """iPhone 8 - PRE-VENDA !!!!!, Confira: http://www.magazineluiza.com.br/landingpage/?header=231017PreVendaiPhone8header.png&unavailable=false&bob=true&menu=selecao-21939&showcase=selecao-21939"""], 
-               'tv':      ["""Encontrei excelentes ofertas em TV's para voce: http://www.magazineluiza.com.br/tv-led-plasma-lcd-e-outras/tv-e-video/s/et/peco/ """, 
-                          """ Conheca a LG 4k: http://www.magazineluiza.com.br/tv-led-plasma-lcd-e-outras/tv-e-video/s/et/peco/"""], 
-               'brinquedos':  ["""Encontrei excelentes ofertas sobre Brinquedos para voce: http://www.magazineluiza.com.br/brinquedos/l/br/ """, 
-                           """Confira ofertas especiais em Brinquedos: http://www.magazineluiza.com.br/brinquedos/l/br/"""] }
-                           
+jokes = { 'stupid': ["""Yo' Mama is so stupid, she needs a recipe to make ice cubes.""", 
+                     """Yo' Mama is so stupid, she thinks DNA is the National Dyslexics Association."""], 
+         'fat':      ["""Yo' Mama is so fat, when she goes to a restaurant, instead of a menu, she gets an estimate.""", 
+                      """ Yo' Mama is so fat, when the cops see her on a street corner, they yell, "Hey you guys, break it up!" """], 
+         'dumb': ["""Yo' Mama is so dumb, when God was giving out brains, she thought they were milkshakes and asked for extra thick.""", 
+                  """Yo' Mama is so dumb, she locked her keys inside her motorcycle."""] }
+
 # Google API access key and custom search ID
 my_api_key = "AIzaSyDq75XYyUe525_k0C3kP-8Za0z_kK5Ak1s"
 my_cse_id = "015323979992596059899:s5hyzuypkl8magazineluiza"
@@ -30,38 +33,41 @@ def google_search(search_term, api_key, cse_id, **kwargs):
         ).execute()
     return res
     
+def promo_search(search_term):
+    
+    
+    
+
+    
+    
 # This function should be outside the BotsView class
-def post_facebook_message(fbid, user_message):  
+def post_facebook_message(fbid, message):  
     
     # Remove all punctuations, lower case the text and split it based on space
-    tokens = re.sub(r"[^a-zA-Z0-9\s]",' ', user_message).lower().split()
-    luiza_talks = "Ola ! Sou a Luiza, tenho 3 grandes promocoes para voce,  por favor, escolha qual promocao voce teria interesse, TV,  celular ou brinquedos!"
-    #luiza_talks = "Ola ! Sou a Luiza, tenho 3 grandes promocoes para voce,  por favor, escolha qual promocao voce teria interesse, TV,  celular ou Home Theater!"
-    #if welcome_message == True:
-    #    luiza_talks = "Ola ! Sou a Luiza, tenho 3 grandes promocoes para voce,  por favor, escolha qual promocao voce teria interesse, TV,  celular ou Home Theater!"
-    #    welcome = False    
-    #else:
-    for token in tokens:
-        if token in luiza_mind:
-            luiza_talks = random.choice(luiza_mind[token])
-            break
-        
-    if not luiza_talks:
-            luiza_talks = "Sua consulta nao foi possivel, por favor, informe um produto que gostaria de consultar" 
-    
+    tokens = re.sub(r"[^a-zA-Z0-9\s]",' ',message).lower().split()
+   # joke_text = ''
+   # for token in tokens:
+   #     if token in jokes:
+   #         joke_text = random.choice(jokes[token])
+   #         break
+   # if not joke_text:
+   #     joke_text = "I didn't understand! Send 'stupid', 'fat', 'dumb' for a Yo Mama joke!" 
+    pprint(tokens)
+    results = google_search("celular", my_api_key, my_cse_id)
+    pprint(results)
     
     
     user_details_url = "https://graph.facebook.com/v2.6/%s"%fbid 
-    
+    pprint(user_details_url)
     #user_details_params = {'url':user_details_url, 'fields':'first_name,last_name,profile_pic', 'access_token':PAGE_ACCESS_TOKEN}
     user_details_params = {'fields':'first_name', 'access_token':PAGE_ACCESS_TOKEN}
     #requests.get(user_details_url, user_details_params).json() 
     resp = requests.get(url=user_details_url, params=user_details_params)
     data = json.loads(resp.text)
-    luiza_talks = data['first_name']+', ' + luiza_talks
+    luiza_talk = 'Yo '+data['first_name']+'..! ' 
    
     post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
-    response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":luiza_talks}})
+    response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":luiza_talk}})
     status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
     pprint(status.json())
     
