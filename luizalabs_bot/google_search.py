@@ -12,7 +12,6 @@ import requests
 
 LOG = logging.getLogger('sw.google_search')
 
-
 def _decode_response(json_string):
     response = json.loads(json_string)
 
@@ -30,7 +29,6 @@ def _decode_response(json_string):
 
     return response['items']
 
-
 def _strip_protocol(url):
 
     p = urlparse.urlparse(url)
@@ -38,25 +36,26 @@ def _strip_protocol(url):
         ('', p.netloc, p.path, p.params, p.query, p.fragment))
     return new_url.lstrip('/')
 
-
 class GoogleCustomSearch(object):
+    
     def __init__(self, search_engine_id, api_key):
         self.search_engine_id = search_engine_id
         self.api_key = api_key
 
     def search(self, keyword, site=None, max_results=2):
+        
         assert isinstance(keyword, basestring)
-            
-            
+        
         for start_index in range(1, max_results, 1):  # 10 is max page size
             url = self._make_url(start_index, keyword, site)
             logging.info(url)
             print url
-
             response = requests.get(url)
+            
             if response.status_code == 403:
                 LOG.info(response.content)
             response.raise_for_status()
+            
             for search_result in _decode_response(response.content):
                 yield search_result
                 if 'nextPage' not in search_result['meta']['queries']:
@@ -69,8 +68,7 @@ class GoogleCustomSearch(object):
         if restrict_to_site is not None:
             keyword = 'site:{} {}'.format(_strip_protocol(restrict_to_site),
                                           keyword)
-        # https://developers.google.com
-        # /custom-search/json-api/v1/reference/cse/list
+                                          
         params = OrderedDict([
             ('cx', self.search_engine_id),
             ('key', self.api_key),
@@ -80,11 +78,9 @@ class GoogleCustomSearch(object):
             ('gss', '.com'),
             ('q', keyword),
             ('oq', keyword),
-            ('filter', '0'),  # duplicate content filter, 1 | 0
-            ('safe', 'off'),  # strict | moderate | off
+            ('filter', '0'),  
+            ('safe', 'off'),  
         ])
-        #if restrict_to_site is not None:
-        #    params['siteSearch'] = _strip_protocol(restrict_to_site)
-
+        
         return 'https://www.googleapis.com/customsearch/v1?{}'.format(
             urllib.urlencode(params))
