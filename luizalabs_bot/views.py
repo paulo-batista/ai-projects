@@ -4,34 +4,50 @@ from django.http.response import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import json, requests, random, re
+import unicodedata
 from pprint import pprint
+from google_search import GoogleCustomSearch
 
 
-#Definicao dos tokens
+#Definicao dos tokens de acesso
 PAGE_ACCESS_TOKEN = "EAACBZAi171kMBACRtwqIKYVGbDoPR14RaXLh4fClBqSdqyCnSgaDVlLIMOxuZB0p8jO9dCJNWp2fHTCnM9HsIZAFNyqjuPNVppFi01qUPQtKUHrmb0ZCJlvJzq56k1QeUTmlbpty5fYuzOCDwrCnjZAZAURxVHQGbNpZCmwgT8BMqrxLl0LfvpO"
 VERIFY_TOKEN = "EAACBZAi171kMBAEgg9wxfrhZBjv4qCawMwEyEA4dUcH8nCk7dYHtC4GpFjAHTlvJlaP3ZCV11ZCTvZBzjsfowe1VLTm2SUnkKpAyhcblWHsBMRbicYImcbRQMPmTvZC96w7LXZBg1ZAchzbk1cDpS9y9SH3zVeRBydoQipVZA16N89V3Bxf8dUhxh"
+GOOGLE_API_KEY = "AIzaSyC12Qqpa4B30aKqpAhSVzwG4FG-3L58HJA"
+GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "015323979992596059899:s5hyzuypkl8"
 
+api = GoogleCustomSearch(GOOGLE_CUSTOM_SEARCH_ENGINE_ID ,GOOGLE_API_KEY)
 
 # Dicionario de dados, usando apenas 3 tokens de exemplos, bem longe da realidade.
 # poderia ser implementado usando um db, webservices ou pages requests
-luiza_mind = { 'celular': ["""Encontrei excelentes ofertas sobre Brinquedos para voce: http://www.magazineluiza.com.br/celulares-e-smartphones/l/te/""", 
-                           """iPhone 8 - PRE-VENDA !!!!!, Confira: http://www.magazineluiza.com.br/landingpage/?header=231017PreVendaiPhone8header.png&unavailable=false&bob=true&menu=selecao-21939&showcase=selecao-21939"""], 
-               'tv':      ["""Encontrei excelentes ofertas em TV's para voce: http://www.magazineluiza.com.br/tv-led-plasma-lcd-e-outras/tv-e-video/s/et/peco/ """, 
-                          """ Conheca a LG 4k: http://www.magazineluiza.com.br/tv-led-plasma-lcd-e-outras/tv-e-video/s/et/peco/"""], 
-               'brinquedo':  ["""Encontrei excelentes ofertas sobre Brinquedos para voce: http://www.magazineluiza.com.br/brinquedos/l/br/ """, 
-                           """Confira ofertas especiais em Brinquedos: http://www.magazineluiza.com.br/brinquedos/l/br/"""] }
-                           
+
+
+ 
+##luiza_mind = { 'celular': ["""Encontrei excelentes ofertas sobre Brinquedos para voce: http://www.magazineluiza.com.br/celulares-e-smartphones/l/te/""", 
+#                           """iPhone 8 - PRE-VENDA !!!!!, Confira: http://www.magazineluiza.com.br/landingpage/?header=231017PreVendaiPhone8header.png&unavailable=false&bob=true&menu=selecao-21939&showcase=selecao-21939"""], 
+#               'tv':      ["""Encontrei excelentes ofertas em TV's para voce: http://www.magazineluiza.com.br/tv-led-plasma-lcd-e-outras/tv-e-video/s/et/peco/ """, 
+#                          """ Conheca a LG 4k: http://www.magazineluiza.com.br/tv-led-plasma-lcd-e-outras/tv-e-video/s/et/peco/"""], 
+#               'brinquedo':  ["""Encontrei excelentes ofertas sobre Brinquedos para voce: http://www.magazineluiza.com.br/brinquedos/l/br/ """, 
+#                           """Confira ofertas especiais em Brinquedos: http://www.magazineluiza.com.br/brinquedos/l/br/"""] }
 #  Metodo que envia dados para o Messenger em resposta a iteracao com o usuario
+
 def post_facebook_message(fbid, user_message):  
     
+    luiza_talks = "Ola ! Sou a Luiza,  por favor, escolha qual produto voce teria interesse, digite frases que contenha uma palavras chave como TV,  celular, brinquedos, etc..."
+    
+    keywords = unicodedata.normalize('NFD', user_message).encode('ascii', 'ignore')
+       
     # tokenization 
-    tokens = re.sub(r"[^a-zA-Z0-9\s]",' ', user_message).lower().split()
-    luiza_talks = "Ola ! Sou a Luiza, tenho 3 grandes promocoes para voce,  por favor, escolha qual promocao voce teria interesse, digite frases que contenha uma palavra chave como TV,  celular ou brinquedos."
-   
-    for token in tokens:
-        if token in luiza_mind:
-            luiza_talks = random.choice(luiza_mind[token])
-            break
+    #keywords = re.sub(r"[^a-zA-Z0-9\s]",' ', user_message).lower().split()
+    #luiza_talks = "Ola ! Sou a Luiza, tenho 3 grandes promocoes para voce,  por favor, escolha qual promocao voce teria interesse, digite frases que contenha uma palavra chave como TV,  celular ou brinquedos."
+    
+    for result in api.search(keywords, 'http://magazineluiza.com.br'):
+       luiza_talks = result['title'] + " " + result['link'] + " " +result['snippet']
+    
+    ##for token in tokens:
+    #    if token in luiza_mind:
+    #        luiza_talks = random.choice(luiza_mind[token])
+    #        pprint(luiza_talks)
+    #        break
         
     if not luiza_talks:
             luiza_talks = "Sua consulta nao foi possivel, por favor, informe um produto que gostaria de consultar" 
