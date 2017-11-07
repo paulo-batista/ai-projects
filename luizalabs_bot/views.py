@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from django.shortcuts import render
 from django.views import generic
 from django.http.response import HttpResponse
@@ -17,27 +19,34 @@ GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "015323979992596059899:s5hyzuypkl8"
 
 api = GoogleCustomSearch(GOOGLE_CUSTOM_SEARCH_ENGINE_ID ,GOOGLE_API_KEY)
  
-welcome = { 'ola': ["Ola !! "], 
-               'oi': [" Oi !!"], 
-               'bom dia': ["Bom dia !!"], 
-               'boa tarde': ["Boa tarde !!"], 
-               'boa noite':  ["Boa noite !!"] }
-             
-welcome = welcome + " sou a Luiza, por favor, digite o produto que voce gostaria de comprar e eu vou irei buscar as melhores ofertas para voce. Ex. Brinquedos para meninos de 3 anos"
-  
 def post_facebook_message(fbid, user_message):  
     
-   keywords = unicodedata.normalize('NFD', user_message).encode('ascii', 'ignore')
+    luiza_talks = ""
     
-   
-    if keywords in welcome:
-        luiza_talks = welcome[keywords]
-    else:
-        for result in api.search(keywords, 'http://magazineluiza.com.br'):
-            luiza_talks = result['title'] + " " + result['link'] + " " +result['snippet']
-
-    if not luiza_talks:
-       luiza_talks = "Sua consulta nao foi possivel, por favor, informe um produto que gostaria de consultar" 
+    welcome = { 'oi': 'Olá !!', 
+                'ola': 'Olá !!',
+                'ol': 'Olá !!',
+                'dia'              : 'Bom dia !!', 
+                'tarde'            : 'Boa tarde !!',
+                'noite'            : 'Boa noite !!'
+              }
+              
+    luiza_wlc_msg = " Eu sou a Luiza, e tenho muitas ofertas e promoções para você, por favor, digite frases com palavras chaves como brinquedos, celular, etc... Ex: Eu quero brinquedo para minha filha de 6 anos."
+    
+    tokens = re.sub(r"[^a-zA-Z0-9\s]",' ', user_message).lower().split()
+    
+    for token in tokens:
+        if token.lower() in ['ola', 'oi', 'ol', 'dia', 'tarde', 'noite']:
+            luiza_talks = welcome[token] + luiza_wlc_msg
+        else:    
+    
+            keywords = unicodedata.normalize('NFD', user_message).encode('ascii', 'ignore')
+            
+            for result in api.search(keywords, 'http://magazineluiza.com.br'):
+                luiza_talks = result['title'] + " " + result['link'] 
+            
+        if not luiza_talks:
+           luiza_talks = "Sua consulta não foi possivel, por favor, informe um produto que gostaria de consultar. Ex: Refrigerador ... " 
     
     user_details_url = "https://graph.facebook.com/v2.6/%s"%fbid 
     user_details_params = {'fields':'first_name', 'access_token':PAGE_ACCESS_TOKEN}
@@ -72,6 +81,3 @@ class ChatBotView(generic.View):
                     pprint(message)
                     post_facebook_message(message['sender']['id'], message['message']['text'])
         return HttpResponse()    
-       
-   
-        
