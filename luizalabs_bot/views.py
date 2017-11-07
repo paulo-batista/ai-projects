@@ -5,11 +5,9 @@ from django.views import generic
 from django.http.response import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-import json, requests, random, re
-import unicodedata
 from pprint import pprint
 from google_search import GoogleCustomSearch
-
+import json, requests, random, re, unicodedata
 
 #Definicao dos tokens de acesso
 PAGE_ACCESS_TOKEN = "EAACBZAi171kMBACRtwqIKYVGbDoPR14RaXLh4fClBqSdqyCnSgaDVlLIMOxuZB0p8jO9dCJNWp2fHTCnM9HsIZAFNyqjuPNVppFi01qUPQtKUHrmb0ZCJlvJzq56k1QeUTmlbpty5fYuzOCDwrCnjZAZAURxVHQGbNpZCmwgT8BMqrxLl0LfvpO"

@@ -61,7 +61,6 @@ class GoogleCustomSearch(object):
                 if 'nextPage' not in search_result['meta']['queries']:
                     print("No more pages...")
                     return
-     
 
     def _make_url(self, start_index, keyword, restrict_to_site):
 
