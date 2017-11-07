@@ -21,21 +21,27 @@ def post_facebook_message(fbid, user_message):
     
     luiza_talks = ""
     
-    welcome = { 'oi': 'Olá !!', 
-                'ola': 'Olá !!',
-                'ol': 'Olá !!',
-                'dia'              : 'Bom dia !!', 
-                'tarde'            : 'Boa tarde !!',
-                'noite'            : 'Boa noite !!'
+    luiza_wlc_msg = " Eu sou a Luiza, e tenho muitas ofertas e promoções para você, por favor, digite frases com palavras chaves como brinquedos, celular, etc... Ex: Eu quero brinquedo para minha filha de 6 anos."
+    luiza_goodbye = " Aguardamos a sua próxima visita, sempre com promoções e muitas ofertas !! Muita Obrigada !!"
+    welcome = { 'oi'               : 'Olá !!' + luiza_wlc_msg, 
+                'ola'              : 'Olá !!' + luiza_wlc_msg,
+                'ol'               : 'Olá !!' + luiza_wlc_msg,
+                'dia'              : 'Bom dia !!' + luiza_wlc_msg, 
+                'tarde'            : 'Boa tarde !!' + luiza_wlc_msg,
+                'noite'            : 'Boa noite !!' + luiza_wlc_msg,
+                'tchau'            : luiza_goodbye,
+                'xau'              : luiza_goodbye,
+                'obrigado'         : luiza_goodbye,
+                'obrigada'         : luiza_goodbye
               }
               
-    luiza_wlc_msg = " Eu sou a Luiza, e tenho muitas ofertas e promoções para você, por favor, digite frases com palavras chaves como brinquedos, celular, etc... Ex: Eu quero brinquedo para minha filha de 6 anos."
+    
     
     tokens = re.sub(r"[^a-zA-Z0-9\s]",' ', user_message).lower().split()
     
     for token in tokens:
-        if token.lower() in ['ola', 'oi', 'ol', 'dia', 'tarde', 'noite']:
-            luiza_talks = welcome[token] + luiza_wlc_msg
+        if token.lower() in ['ola', 'oi', 'ol', 'dia', 'tarde', 'noite', 'tchau', 'obrigado', 'obrigada']:
+            luiza_talks = welcome[token]
         else:    
     
             keywords = unicodedata.normalize('NFD', user_message).encode('ascii', 'ignore')
